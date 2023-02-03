@@ -1,4 +1,4 @@
-package io.bridge.secure.storage.plugin.resulthandler;
+package io.bridge.secure.storage.plugin.statementhandler;
 
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import io.bridge.secure.storage.cryptor.ICryptor;
@@ -17,7 +17,6 @@ import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
-import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -59,8 +58,14 @@ public class CryptoInsertHandler implements ICryptoHandler{
 
   private void insertIndexTable(Executor executor,MappedStatement ms, StatementInfo statementInfo){
 
-    statementInfo.getIndexTableValues().values().stream().forEach(
-      item -> {
+    statementInfo.getIndexTableValues().values().stream()
+      .filter(item->{
+          String tableName = item.getTableName();
+          String columnName = item.getColumnName();
+          CryptoColumnInfo cryptoColumnInfo = CryptoTableInfoRepository.getCryptoColumnByColumnName(tableName,columnName);
+          return cryptoColumnInfo!=null&&cryptoColumnInfo.isFuzzy();
+        })
+      .forEach(item -> {
         String statementId = "io.bridge.secure.storage.indextable.mapper.IndexTableMapper.batchInsert";
         MappedStatement batchInsertMs = ms.getConfiguration().getMappedStatement(statementId);
         MapperMethod.ParamMap paramMap = new MapperMethod.ParamMap();
@@ -92,67 +97,6 @@ public class CryptoInsertHandler implements ICryptoHandler{
         } catch (SQLException e) {
           log.warn(String.format("error where batch insert table %s", IndexTableInfoRepository.getIndexTableName(item.getTableName(),item.getColumnName())),e);
         }
-      }
-    );
-  }
-  @Override
-  public void postProcess(Executor executor, MappedStatement ms, Object originalParameter, Object parameter) {
-    BoundSql boundSql = ms.getBoundSql(parameter);
-//    InsertStatement insertStatement = SQLParserUtil.parseInsert(boundSql.getSql());
-//    String tableName = insertStatement.getTableName();
-//    TableCryptoInfo tableCryptoInfo = entityScanner.getTableColumnsMap().get(tableName);
-//    Map<String, FieldAndColumnRef> fussyColumnInfoMap =  tableCryptoInfo.getFussyColumnInfo();
-//    if(fussyColumnInfoMap.values()==null || fussyColumnInfoMap.size()==0)
-//      return;
-//    Map<String,Object> valueMap = new HashMap<>();
-//    IndexTableDesc indexTableDesc = new IndexTableDesc();
-//    indexTableDesc.setRefTableName(tableCryptoInfo.getTableName());
-//    indexTableDesc.setRefTableIdColumnName(tableCryptoInfo.getIdColumnName());
-//    List<IndexTableDesc.IndexTableAndColumnInfo> indexTableAndColumnInfos = new ArrayList();
-//    indexTableDesc.setIndexTableAndColumnInfoList(indexTableAndColumnInfos);
-//    List<String> scopes = new ArrayList<>();
-//    indexTableDesc.setScope(scopes);
-//    SqlSession session = sqlSessionFactory.openSession();
-//    try {
-//      Connection conn = session.getConnection();
-//      valueMap.put(tableCryptoInfo.getIdColumnName(),ObjectUtil.fieldValue(parameter,tableCryptoInfo.getIdFieldName(),false));
-//      for(FieldAndColumnRef fieldAndColumnRef: fussyColumnInfoMap.values()){
-//        String columnName = fieldAndColumnRef.getColumnName();
-//        if(fieldAndColumnRef.isFuzzy()) {
-//          IndexTableDesc.IndexTableAndColumnInfo info = new IndexTableDesc.IndexTableAndColumnInfo();
-//          String idxTableName = "idx_" + tableCryptoInfo.getTableName() + "_" + columnName;
-//          scopes.add(idxTableName);
-//          info.setTableName(idxTableName);
-//          info.setColumnName(columnName);
-//          indexTableAndColumnInfos.add(info);
-//        }
-//        valueMap.put(columnName,ObjectUtil.fieldValue(originalParameter,fieldAndColumnRef.getFieldName(),false));
-//      }
-//      List<Map<String,Object>> valueList = new ArrayList<>();
-//      valueList.add(valueMap);
-//      ProcessValueResult processValueResult = indexTableMapper.constructBatchInsertSQL(valueList,indexTableDesc);
-//      if(processValueResult.getRowHandled()==0){
-//        return;
-//      }
-//      List<String> insertSQLs = processValueResult.getInsertSQLs();
-//      for(String insertSQL : insertSQLs){
-//        indexTableMapper.insertBatch(conn,insertSQL);
-//      }
-//    }catch (NoSuchFieldException e) {
-//      throw new RuntimeException(e);
-//    } catch (IllegalAccessException e) {
-//      throw new RuntimeException(e);
-//    } catch (SQLException e) {
-//      throw new RuntimeException(e);
-//    } catch (Exception e) {
-//      throw new RuntimeException(e);
-//    }finally {
-//      session.close();
-//    }
-  }
-
-  @Override
-  public void postProcess(Executor executor, MappedStatement ms, Object originalParameter, Object parameter, ResultHandler resultHandler) {
-
+      });
   }
 }

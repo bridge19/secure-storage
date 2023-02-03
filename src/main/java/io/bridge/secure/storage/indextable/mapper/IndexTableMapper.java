@@ -3,6 +3,7 @@ package io.bridge.secure.storage.indextable.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.bridge.secure.storage.annotation.statement.IgnoreEncryption;
 import io.bridge.secure.storage.indextable.entity.IndexTable;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
@@ -39,7 +40,15 @@ public interface IndexTableMapper extends BaseMapper<IndexTable> {
   int selectId(@Param("tableName") String tableName,
                   @Param("columnName") String columnName,
                   @Param("columnValue") String columnValue);
-
+  @Delete("<script>"+
+          "delete idx_${tableName}_${columnName}"+
+          " where ${tableName}_id in"+
+          "<foreach collection='list' item='item' separator=','  open='(' close=')' >" +
+          "#{item}" +
+          "</foreach></script>")
+  int deleteId(@Param("tableName") String tableName,
+               @Param("columnName") String columnName,
+               @Param("list") List<Long> ids);
 
 
 //  public ProcessValueResult constructBatchInsertSQL(ResultSet resultSet, IndexTableDesc indexTableDesc) throws SQLException,Exception{

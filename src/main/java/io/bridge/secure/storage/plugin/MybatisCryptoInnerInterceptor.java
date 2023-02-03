@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import io.bridge.secure.storage.annotation.statement.EnableEncryption;
 import io.bridge.secure.storage.annotation.statement.IgnoreEncryption;
-import io.bridge.secure.storage.plugin.resulthandler.ICryptoHandler;
+import io.bridge.secure.storage.plugin.statementhandler.ICryptoHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;

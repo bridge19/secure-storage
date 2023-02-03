@@ -41,7 +41,7 @@ public class CryptoTableInfoRepository {
   public static ITokenizer getTokenizer(Class tokenizerClass){
     String clazzName = tokenizerClass.getName();
     ITokenizer tokenizer = tokenizerMap.get(clazzName);
-    if(tokenizerMap ==null){
+    if(tokenizer ==null){
       try {
         tokenizer = (ITokenizer)tokenizerClass.newInstance();
       } catch (InstantiationException | IllegalAccessException e) {

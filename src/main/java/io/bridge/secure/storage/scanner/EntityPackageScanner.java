@@ -103,7 +103,8 @@ public class EntityPackageScanner implements IEntityPackageScanner {
     cryptoTableInfo.setCryptoColumnInfoMap(cryptoColumnInfoMap);
     CryptoTableInfoRepository.storeCryptoTableInfo(cryptoTableInfo);
 
-    cryptoColumnInfoMap.values().stream().forEach(item ->{
+    //模糊查询的字段需要建立索引表
+    cryptoColumnInfoMap.values().stream().filter(item->item.isFuzzy()).forEach(item ->{
       IndexTableInfo indexTableInfo = new IndexTableInfo();
       String refTableName = cryptoTableInfo.getTableName();
       String columnName = item.getColumnName();

@@ -1,4 +1,4 @@
-package io.bridge.secure.storage.plugin.resulthandler;
+package io.bridge.secure.storage.plugin.statementhandler;
 
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import io.bridge.secure.storage.annotation.statement.NonCached;
@@ -7,7 +7,6 @@ import io.bridge.secure.storage.plugin.sqlparser.StatementParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.*;
-import org.apache.ibatis.session.ResultHandler;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
@@ -60,14 +59,5 @@ public class CryptoSelectHandler implements ICryptoHandler {
       return false;
     }
     return cachingSQL;
-  }
-  @Override
-  public void postProcess(Executor executor, MappedStatement ms, Object originalParameter, Object parameter) {
-
-  }
-
-  @Override
-  public void postProcess(Executor executor, MappedStatement ms, Object originalParameter, Object parameter, ResultHandler resultHandler) {
-
   }
 }

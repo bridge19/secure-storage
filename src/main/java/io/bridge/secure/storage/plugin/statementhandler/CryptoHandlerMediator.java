@@ -1,4 +1,4 @@
-package io.bridge.secure.storage.plugin.resulthandler;
+package io.bridge.secure.storage.plugin.statementhandler;
 
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.BoundSql;
@@ -8,7 +8,6 @@ import org.apache.ibatis.session.ResultHandler;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,15 +35,6 @@ public class CryptoHandlerMediator implements ICryptoHandler, ApplicationContext
   @Override
   public void beforeProcess(Executor executor,MappedStatement ms, Object parameter, BoundSql boundSql) {
     instance(ms.getSqlCommandType()).beforeProcess(executor,ms,parameter,boundSql);
-  }
-  @Override
-  public void postProcess(Executor executor, MappedStatement ms, Object originalParameter, Object parameter) {
-    instance(ms.getSqlCommandType()).postProcess(executor,ms,originalParameter,parameter);
-  }
-
-  @Override
-  public void postProcess(Executor executor, MappedStatement ms, Object originalParameter, Object parameter, ResultHandler resultHandler) {
-    instance(ms.getSqlCommandType()).postProcess(executor,ms,originalParameter,parameter,resultHandler);
   }
 
   @Override
