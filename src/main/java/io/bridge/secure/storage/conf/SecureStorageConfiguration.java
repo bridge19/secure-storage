@@ -1,11 +1,10 @@
 package io.bridge.secure.storage.conf;
 
 import io.bridge.secure.storage.ApplicationStartedListener;
+import io.bridge.secure.storage.indextable.delete.IdxTableValueDeleter;
 import io.bridge.secure.storage.indextable.initiate.IndexTableInitiator;
 import io.bridge.secure.storage.plugin.MybatisCryptoInnerInterceptor;
 import io.bridge.secure.storage.plugin.MybatisSelectResultInterceptor;
-import io.bridge.secure.storage.plugin.statementhandler.CryptoHandlerMediator;
-import io.bridge.secure.storage.plugin.statementhandler.ICryptoHandler;
 import io.bridge.secure.storage.scanner.EntityPackageScanner;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
@@ -26,13 +25,9 @@ public class SecureStorageConfiguration {
   public IndexTableInitiator getIndexTableInitiator(){
     return new IndexTableInitiator();
   }
-  @Bean
-  public ICryptoHandler resultHandler(){
-    return new CryptoHandlerMediator();
-  }
   @Bean(name = "cryptoInnerInterceptor")
   public MybatisCryptoInnerInterceptor resultHandlerInterceptor(){
-    return new MybatisCryptoInnerInterceptor(resultHandler());
+    return new MybatisCryptoInnerInterceptor();
   }
   @Bean
   public ApplicationStartedListener getListener()
@@ -42,5 +37,9 @@ public class SecureStorageConfiguration {
   @Bean
   public MybatisSelectResultInterceptor mybatisSelectResultInterceptor(){
     return new MybatisSelectResultInterceptor();
+  }
+  @Bean
+  public IdxTableValueDeleter idxTableValueDeleter(){
+    return new IdxTableValueDeleter();
   }
 }

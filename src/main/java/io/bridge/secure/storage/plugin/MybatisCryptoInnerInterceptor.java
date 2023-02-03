@@ -4,7 +4,8 @@ import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import io.bridge.secure.storage.annotation.statement.EnableEncryption;
 import io.bridge.secure.storage.annotation.statement.IgnoreEncryption;
-import io.bridge.secure.storage.plugin.statementhandler.ICryptoHandler;
+import io.bridge.secure.storage.plugin.processor.IStatementProcessor;
+import io.bridge.secure.storage.plugin.processor.StatementProcessorFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -24,12 +25,9 @@ import java.util.Set;
 @Slf4j
 public class MybatisCryptoInnerInterceptor implements InnerInterceptor {
 
-  private ICryptoHandler cryptoHandler = null;
+  private IStatementProcessor cryptoHandler = new StatementProcessorFactory();
   private Set<String> ignoreStatements = new HashSet<>();
   private Set<String> parsedMappers = new HashSet<>();
-  public MybatisCryptoInnerInterceptor(ICryptoHandler cryptoHandler){
-    this.cryptoHandler = cryptoHandler;
-  }
   @Override
   public void beforePrepare(StatementHandler sh, Connection connection, Integer transactionTimeout) {
     PluginUtils.MPStatementHandler mpSh = PluginUtils.mpStatementHandler(sh);
@@ -38,14 +36,14 @@ public class MybatisCryptoInnerInterceptor implements InnerInterceptor {
     if(!needCrypto(statementId)){
       return;
     }
-    long start = System.currentTimeMillis();
-
-    if(ms.getSqlCommandType() == SqlCommandType.INSERT){
-      BoundSql boundSql = mpSh.boundSql();
-      Executor executor = mpSh.executor();
-      Object parameter = boundSql.getParameterObject();
-      cryptoHandler.beforeProcess(executor,ms, parameter, boundSql);
+    if(ms.getSqlCommandType() != SqlCommandType.INSERT){
+      return;
     }
+    long start = System.currentTimeMillis();
+    BoundSql boundSql = mpSh.boundSql();
+    Executor executor = mpSh.executor();
+    Object parameter = boundSql.getParameterObject();
+    cryptoHandler.process(executor,ms, parameter, boundSql);
     log.info("parse sql time cost: " + (System.currentTimeMillis() - start));
   }
   @Override
@@ -56,7 +54,7 @@ public class MybatisCryptoInnerInterceptor implements InnerInterceptor {
     }
     long start = System.currentTimeMillis();
     if(ms.getSqlCommandType() == SqlCommandType.SELECT || ms.getSqlCommandType() == SqlCommandType.UPDATE){
-      cryptoHandler.beforeProcess(executor,ms, parameter, boundSql);
+      cryptoHandler.process(executor,ms, parameter, boundSql);
     }
     log.info("parse sql time cost: " + (System.currentTimeMillis() - start));
   }

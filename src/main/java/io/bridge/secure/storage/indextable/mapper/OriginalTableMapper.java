@@ -11,6 +11,8 @@ import java.util.List;
 @IgnoreEncryption
 public interface OriginalTableMapper extends BaseMapper<OriginalTable> {
 
+  @Select("show tables")
+  List<String> showAllTables();
   @Select("SELECT ${IdColumnName} as id, ${columnName} as columnValue from ${tableName} order by id limit 1000")
   List<OriginalTable> selectOriginalTableValues(@Param("tableName") String tableName,
                                                 @Param("IdColumnName") String IdColumnName,

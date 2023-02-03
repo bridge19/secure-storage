@@ -14,7 +14,10 @@ public class ApplicationStartedListener implements ApplicationListener<Applicati
   private Initiator initiator;
   @Override
   public void onApplicationEvent(ApplicationStartedEvent event) {
+    log.info("start checking index tables creation...");
+    long start = System.currentTimeMillis();
     initiator.process();
+    log.info("finish checking index tables creation, cost: {}",(System.currentTimeMillis()-start));
   }
 
 

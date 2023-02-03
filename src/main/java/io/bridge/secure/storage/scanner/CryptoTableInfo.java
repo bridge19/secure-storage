@@ -11,6 +11,9 @@ public class CryptoTableInfo {
   private String tableName;
   private String idColumnName;
   private String idFieldName;
+  private Boolean logicDelete = Boolean.FALSE;
+  private String deleteColumnName;
+  private String deleteFieldName;
   private List<String> allEncryptColumns;
   private Map<String, CryptoColumnInfo> cryptoColumnInfoMap;
 }

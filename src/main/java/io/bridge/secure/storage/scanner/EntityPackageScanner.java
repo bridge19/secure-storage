@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import io.bridge.secure.storage.annotation.entity.EncryptionClass;
 import io.bridge.secure.storage.annotation.entity.EncryptionField;
 import io.bridge.secure.storage.annotation.entity.Id;
+import io.bridge.secure.storage.annotation.entity.LogicDelete;
 import io.bridge.secure.storage.enums.Algorithm;
 import io.bridge.secure.storage.indextable.IndexTableInfo;
 import io.bridge.secure.storage.indextable.IndexTableInfoRepository;
@@ -16,6 +17,7 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.SimpleMetadataReaderFactory;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -66,41 +68,37 @@ public class EntityPackageScanner implements IEntityPackageScanner {
     CryptoTableInfo cryptoTableInfo = new CryptoTableInfo();
     cryptoTableInfo.setJavaClass(clazz);
     String tableName = annotation.value();
+    cryptoTableInfo.setTableName(tableName);
     Field[] fields = clazz.getDeclaredFields();
-    String idColumnName =null;
-    String idFieldName = null;
-    Class<?> tokenizer = null;
-    Class<?> cryptor = null;
-    String secrete = null;
     List<String> columns = new ArrayList<>();
     Map<String, CryptoColumnInfo> cryptoColumnInfoMap = new HashMap<>();
+    cryptoTableInfo.setAllEncryptColumns(columns);
+    cryptoTableInfo.setCryptoColumnInfoMap(cryptoColumnInfoMap);
     for(Field field : fields){
-      Id idAnno = field.getAnnotation(Id.class);
-      if(idAnno !=null && StringUtils.isNotBlank(idAnno.value())){
-        idColumnName = idAnno.value();
-        idFieldName = field.getName();
-      }
-      EncryptionField encryptionField = field.getAnnotation(EncryptionField.class);
-      if(encryptionField != null && StringUtils.isNotBlank(encryptionField.columnName())){
-        String columnName = encryptionField.columnName();
-        tokenizer = encryptionField.getTokenizer();
-        cryptor = encryptionField.getCryptor();
-        columns.add(columnName);
-        if(encryptionField.fuzzySearch()){
-          cryptoColumnInfoMap.put(columnName,new CryptoColumnInfo(true,field.getName(),columnName, tokenizer,cryptor));
-        }else {
-          cryptoColumnInfoMap.put(columnName,new CryptoColumnInfo(false,field.getName(), columnName, tokenizer,cryptor));
+      Annotation[] annotations = field.getAnnotations();
+      for(Annotation anno : annotations) {
+        if(anno instanceof Id) {
+          Id idAnno = (Id)anno;
+          cryptoTableInfo.setIdColumnName(idAnno.value());
+          cryptoTableInfo.setIdFieldName(field.getName());
+        }else if(anno instanceof EncryptionField) {
+          EncryptionField encryptionField = (EncryptionField)anno;
+          String columnName = encryptionField.columnName();
+          Class<?> tokenizer = encryptionField.getTokenizer();
+          Class<?> cryptor = encryptionField.getCryptor();
+          columns.add(columnName);
+          cryptoColumnInfoMap.put(columnName, new CryptoColumnInfo(encryptionField.fuzzySearch(), field.getName(), columnName, tokenizer, cryptor));
+        }else if(anno instanceof LogicDelete){
+          LogicDelete logicDelete =(LogicDelete)anno;
+          cryptoTableInfo.setLogicDelete(true);
+          cryptoTableInfo.setDeleteColumnName(logicDelete.value());
+          cryptoTableInfo.setDeleteFieldName(field.getName());
         }
       }
     }
     if(columns.size()==0){
       return;
     }
-    cryptoTableInfo.setTableName(tableName);
-    cryptoTableInfo.setIdColumnName(idColumnName);
-    cryptoTableInfo.setIdFieldName(idFieldName);
-    cryptoTableInfo.setAllEncryptColumns(columns);
-    cryptoTableInfo.setCryptoColumnInfoMap(cryptoColumnInfoMap);
     CryptoTableInfoRepository.storeCryptoTableInfo(cryptoTableInfo);
 
     //模糊查询的字段需要建立索引表

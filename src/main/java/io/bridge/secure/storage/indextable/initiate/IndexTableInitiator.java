@@ -109,18 +109,14 @@ public class IndexTableInitiator implements Initiator {
   private List<String> checkAndCreateIdxTable() {
     List<String> createdTables = new ArrayList<>();
     Set<String> indexTableNameList = IndexTableInfoRepository.allIndexTableName();
-    try {
-      List<String> allTables = queryAllTableNames();
-      if(CollectionUtils.isNotEmpty(indexTableNameList)&&CollectionUtils.isNotEmpty(allTables)){
-        for(String indexTableName : indexTableNameList){
-          if(!allTables.contains(indexTableName)){
-            createIdxTable(IndexTableInfoRepository.getIndexTableInfo(indexTableName));
-            createdTables.add(indexTableName);
-          }
+    List<String> allTables = queryAllTableNames();
+    if(CollectionUtils.isNotEmpty(indexTableNameList)&&CollectionUtils.isNotEmpty(allTables)){
+      for(String indexTableName : indexTableNameList){
+        if(!allTables.contains(indexTableName)){
+          createIdxTable(IndexTableInfoRepository.getIndexTableInfo(indexTableName));
+          createdTables.add(indexTableName);
         }
       }
-    }catch (SQLException e){
-      log.error("init index table error.",e);
     }
     return createdTables;
   }
@@ -128,26 +124,10 @@ public class IndexTableInitiator implements Initiator {
   private void createIdxTable(IndexTableInfo indexTableDesc){
     indexTableMapper.createTable(indexTableDesc.getRefTableName(),indexTableDesc.getColumnName());
   }
-  private List<String> queryAllTableNames() throws SQLException {
-    SqlSession session = sqlSessionFactory.openSession();
-    try {
-      Connection conn = session.getConnection();
-      conn.setAutoCommit(false);
-      String url = this.url.indexOf('?')>0?this.url.substring(0,this.url.indexOf('?')):this.url;
-      String schemaName = url.substring(url.lastIndexOf("/")+1);
-      ResultSet rs = null;
-      DatabaseMetaData meta = conn.getMetaData();
-      rs = meta.getTables(schemaName, null, null, new String[] {
-              "TABLE"
-      });
-      List<String> tableNames = new ArrayList<>();
-      while (rs.next()) {
-        String tblName = rs.getString("TABLE_NAME");
-        tableNames.add(tblName);
-      }
-      return tableNames;
-    }finally {
-      session.close();
-    }
+
+  //考虑数据查询权限
+  private List<String> queryAllTableNames() {
+    log.debug("fetch all tables..");
+    return originalTableMapper.showAllTables();
   }
 }

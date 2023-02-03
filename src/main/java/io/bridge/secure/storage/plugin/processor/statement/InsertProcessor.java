@@ -1,10 +1,11 @@
-package io.bridge.secure.storage.plugin.statementhandler;
+package io.bridge.secure.storage.plugin.processor.statement;
 
 import com.baomidou.mybatisplus.core.toolkit.PluginUtils;
 import io.bridge.secure.storage.cryptor.ICryptor;
 import io.bridge.secure.storage.indextable.IndexTableInfoRepository;
 import io.bridge.secure.storage.indextable.entity.IndexTable;
 import io.bridge.secure.storage.indextable.mapper.IndexTableMapper;
+import io.bridge.secure.storage.plugin.processor.IStatementProcessor;
 import io.bridge.secure.storage.plugin.sqlparser.StatementInfo;
 import io.bridge.secure.storage.plugin.sqlparser.StatementParser;
 import io.bridge.secure.storage.scanner.CryptoColumnInfo;
@@ -29,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component("insertHandler")
-public class CryptoInsertHandler implements ICryptoHandler{
+public class InsertProcessor implements IStatementProcessor {
 
   @Autowired
   private IndexTableMapper indexTableMapper;
@@ -43,7 +44,7 @@ public class CryptoInsertHandler implements ICryptoHandler{
   }
 
   @Override
-  public void beforeProcess(Executor executor,MappedStatement ms, Object parameter,BoundSql boundSql) {
+  public void process(Executor executor,MappedStatement ms, Object parameter,BoundSql boundSql) {
     String statementId = ms.getId();
     StatementInfo statementInfo = cachedStatements.get(statementId);
     PluginUtils.MPBoundSql mpBoundSql = PluginUtils.mpBoundSql(boundSql);
