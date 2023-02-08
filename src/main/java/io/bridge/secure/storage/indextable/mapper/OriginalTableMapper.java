@@ -13,15 +13,19 @@ public interface OriginalTableMapper extends BaseMapper<OriginalTable> {
 
   @Select("show tables")
   List<String> showAllTables();
-  @Select("SELECT ${IdColumnName} as id, ${columnName} as columnValue from ${tableName} order by id limit 1000")
+  @Select("SELECT ${idColumnName} as id, ${columnName} as columnValue from ${tableName} order by id limit 1000")
   List<OriginalTable> selectOriginalTableValues(@Param("tableName") String tableName,
-                                                @Param("IdColumnName") String IdColumnName,
+                                                @Param("idColumnName") String IdColumnName,
                                                 @Param("columnName") String columnName);
 
-  @Select("SELECT ${IdColumnName} ad id, ${columnName} as columnValue from ${tableName} where id>#{id} order by id limit 1000")
+  @Select("SELECT ${idColumnName} as id, ${columnName} as columnValue from ${tableName} where id>#{id} order by id limit 1000")
   List<OriginalTable> selectOriginalTableValuesById(@Param("tableName") String tableName,
-                                                    @Param("IdColumnName") String IdColumnName,
+                                                    @Param("idColumnName") String IdColumnName,
                                                     @Param("columnName") String columnName,
                                                     @Param("id") Long id);
+
+  @Select("SELECT ${idColumnName} as id from ${tableName} ")
+  List<Long> selectImpactIds (@Param("tableName") String tableName,
+                              @Param("idColumnName") String IdColumnName);
 
 }

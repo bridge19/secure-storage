@@ -58,6 +58,9 @@ public class CryptoTableInfoRepository {
   public static CryptoTableInfo getCryptoTableInfo(String tableName){
     return cryptoTableInfoMap.get(tableName);
   }
+  public static boolean isCryptoTable(String tableName){
+    return cryptoTableInfoMap.get(tableName)!=null;
+  }
   public static CryptoTableInfo getCryptoClassInfo(Class className){
     return cryptoClassInfoMap.get(className);
   }

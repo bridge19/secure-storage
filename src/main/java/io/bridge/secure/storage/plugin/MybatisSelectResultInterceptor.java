@@ -68,9 +68,9 @@ public class MybatisSelectResultInterceptor implements Interceptor {
       ICryptor cryptor = CryptoTableInfoRepository.getCryptor(item.getCryptor());
       try {
         if(isSuperClass){
-          ObjectUtil.decryptObject(clazz,result, item.getFieldName(),cryptor);
+          ObjectUtil.decryptObjectField(clazz,result, item.getFieldName(),cryptor);
         }else {
-          ObjectUtil.decryptObject(result, item.getFieldName(),cryptor);
+          ObjectUtil.decryptObjectField(result, item.getFieldName(),cryptor);
         }
       } catch (NoSuchFieldException | IllegalAccessException e) {
         log.warn(String.format("handle result error for class [%s], field [].", className, item.getFieldName()), e);

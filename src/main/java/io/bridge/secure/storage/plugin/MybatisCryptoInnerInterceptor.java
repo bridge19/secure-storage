@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.inner.InnerInterceptor;
 import io.bridge.secure.storage.annotation.statement.EnableEncryption;
 import io.bridge.secure.storage.annotation.statement.IgnoreEncryption;
 import io.bridge.secure.storage.plugin.processor.IStatementProcessor;
-import io.bridge.secure.storage.plugin.processor.StatementProcessorFactory;
+import io.bridge.secure.storage.plugin.processor.StatementProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.statement.StatementHandler;
@@ -25,7 +25,7 @@ import java.util.Set;
 @Slf4j
 public class MybatisCryptoInnerInterceptor implements InnerInterceptor {
 
-  private IStatementProcessor cryptoHandler = new StatementProcessorFactory();
+  private IStatementProcessor statementProcessor = new StatementProcessor();
   private Set<String> ignoreStatements = new HashSet<>();
   private Set<String> parsedMappers = new HashSet<>();
   @Override
@@ -33,29 +33,24 @@ public class MybatisCryptoInnerInterceptor implements InnerInterceptor {
     PluginUtils.MPStatementHandler mpSh = PluginUtils.mpStatementHandler(sh);
     MappedStatement ms = mpSh.mappedStatement();
     String statementId = ms.getId();
-    if(!needCrypto(statementId)){
-      return;
-    }
-    if(ms.getSqlCommandType() != SqlCommandType.INSERT){
+    if(!needCrypto(statementId) || ms.getSqlCommandType()==SqlCommandType.SELECT){
       return;
     }
     long start = System.currentTimeMillis();
     BoundSql boundSql = mpSh.boundSql();
     Executor executor = mpSh.executor();
     Object parameter = boundSql.getParameterObject();
-    cryptoHandler.process(executor,ms, parameter, boundSql);
+    statementProcessor.process(executor,ms, parameter, boundSql);
     log.info("parse sql time cost: " + (System.currentTimeMillis() - start));
   }
   @Override
   public void beforeQuery(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     String statementId = ms.getId();
-    if(!needCrypto(statementId)){
+    if(statementId.endsWith("_QUERY_ID") || !needCrypto(statementId)){
       return;
     }
     long start = System.currentTimeMillis();
-    if(ms.getSqlCommandType() == SqlCommandType.SELECT || ms.getSqlCommandType() == SqlCommandType.UPDATE){
-      cryptoHandler.process(executor,ms, parameter, boundSql);
-    }
+    statementProcessor.process(executor,ms, parameter, boundSql);
     log.info("parse sql time cost: " + (System.currentTimeMillis() - start));
   }
 

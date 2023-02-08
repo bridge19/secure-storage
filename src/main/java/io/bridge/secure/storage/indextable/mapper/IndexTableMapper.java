@@ -3,10 +3,7 @@ package io.bridge.secure.storage.indextable.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import io.bridge.secure.storage.annotation.statement.IgnoreEncryption;
 import io.bridge.secure.storage.indextable.entity.IndexTable;
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 
 import java.util.List;
 
@@ -35,18 +32,23 @@ public interface IndexTableMapper extends BaseMapper<IndexTable> {
                          @Param("columnName") String columnName,
                          @Param("list") List<IndexTable> values);
 
-  @Insert("SELECT ${tableName}_id from idx_${tableName}_${columnName}"+
-          " where ${columnName} = #{columnValue}")
+  @Select("SELECT ${tableName}_id from idx_${tableName}_${columnName}"+
+          " where ${columnName} = #{columnValue} and deleted=0")
   int selectId(@Param("tableName") String tableName,
                   @Param("columnName") String columnName,
                   @Param("columnValue") String columnValue);
-  @Delete("<script>"+
-          "delete idx_${tableName}_${columnName}"+
+  @Update("<script>"+
+          "update idx_${tableName}_${columnName} set deleted=1"+
           " where ${tableName}_id in"+
           "<foreach collection='list' item='item' separator=','  open='(' close=')' >" +
           "#{item}" +
           "</foreach></script>")
-  int deleteId(@Param("tableName") String tableName,
+  int logicDeleteId(@Param("tableName") String tableName,
                @Param("columnName") String columnName,
                @Param("list") List<Long> ids);
+
+  @Delete("delete idx_${tableName}_${columnName}"+
+          " where deleted=1")
+  int deleteId(@Param("tableName") String tableName,
+                    @Param("columnName") String columnName);
 }
