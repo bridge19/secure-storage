@@ -13,6 +13,7 @@ import io.bridge.secure.storage.tokenizer.ITokenizer;
 import io.bridge.secure.storage.util.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.update.Update;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.ibatis.binding.MapperMethod;
@@ -431,6 +432,8 @@ public class StatementInfo {
     String wherePart=null;
     if(isUpdate()){
       wherePart = ((Update)getStatement()).getWhere().toString();
+    }else if(isDelete()){
+      wherePart = ((Delete)getStatement()).getWhere().toString();
     }
     return selectPart +" where " + wherePart;
   }
