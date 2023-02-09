@@ -27,7 +27,8 @@ public interface IndexTableMapper extends BaseMapper<IndexTable> {
           "INSERT INTO idx_${tableName}_${columnName}(${columnName},${tableName}_id) value"+
           "<foreach collection='list' item='item' separator=',' >" +
           "(#{item.columnValue},#{item.refTableIdColumnValue})" +
-          "</foreach></script>")
+          "</foreach>" +
+          "ON DUPLICATE KEY UPDATE DELETED = 0</script>")
   int batchInsert(@Param("tableName") String tableName,
                          @Param("columnName") String columnName,
                          @Param("list") List<IndexTable> values);
