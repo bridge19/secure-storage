@@ -45,6 +45,9 @@ public class StatementProcessor implements IStatementProcessor {
       }
       statementInfo.updateIndexTable(executor,ms);
     } else if (statementInfo.isDelete()) {
+      if(!statementInfo.hasIdInWhere()){
+        statementInfo.prepareIdValues(executor,ms.getConfiguration(),parameter,boundSql);
+      }
       statementInfo.deleteIndexTable(executor,ms);
     }
   }
