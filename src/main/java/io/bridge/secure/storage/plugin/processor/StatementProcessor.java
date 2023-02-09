@@ -16,6 +16,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class StatementProcessor implements IStatementProcessor {
+  private static final StatementProcessor instance = new StatementProcessor();
+  public static StatementProcessor getInstance(){
+    return instance;
+  }
+  private StatementProcessor(){}
   private static Map<String, StatementInfo> cachedStatements = new ConcurrentHashMap<>();
 
   @Override

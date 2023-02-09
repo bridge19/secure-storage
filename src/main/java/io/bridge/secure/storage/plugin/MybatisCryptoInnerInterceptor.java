@@ -17,22 +17,7 @@ import java.sql.SQLException;
 
 public class MybatisCryptoInnerInterceptor implements InnerInterceptor,IStatementChecker {
 
-  private IStatementProcessor statementProcessor = new StatementProcessor();
-  @Override
-  public void beforePrepare(StatementHandler sh, Connection connection, Integer transactionTimeout) {
-    PluginUtils.MPStatementHandler mpSh = PluginUtils.mpStatementHandler(sh);
-    MappedStatement ms = mpSh.mappedStatement();
-    String statementId = ms.getId();
-    if(!needCrypto(statementId) || ms.getSqlCommandType()==SqlCommandType.SELECT){
-      return;
-    }
-    long start = System.currentTimeMillis();
-    BoundSql boundSql = mpSh.boundSql();
-    Executor executor = mpSh.executor();
-    Object parameter = boundSql.getParameterObject();
-    statementProcessor.process(executor,ms, parameter, boundSql);
-    logger.info("parse sql time cost: " + (System.currentTimeMillis() - start));
-  }
+  private IStatementProcessor statementProcessor = StatementProcessor.getInstance();
   @Override
   public void beforeQuery(Executor executor, MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     String statementId = ms.getId();

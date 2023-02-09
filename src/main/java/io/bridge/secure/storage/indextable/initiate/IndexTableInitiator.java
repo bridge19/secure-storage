@@ -12,17 +12,12 @@ import io.bridge.secure.storage.scanner.CryptoTableInfoRepository;
 import io.bridge.secure.storage.tokenizer.ITokenizer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.Resource;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -39,17 +34,24 @@ public class IndexTableInitiator implements Initiator {
   @Qualifier("indexTableValueInitiator")
   private Initiator indexTableValueInitiator;
 
-  @Value("${secure.storage.init.index-tables:false}")
+  @Value("${secure.storage.init.index-tables:true}")
   private boolean initIndexTables;
 
+  @Value("${secure.storage.init.index-table-values:true}")
+  private boolean initIndexTableValues;
   @Resource
   private IndexTableMapper indexTableMapper;
 
   @Resource
   private OriginalTableMapper originalTableMapper;
   public void process(){
+    if(!initIndexTables){
+      log.info("Ignore initiating index table. Turn on checking switcher, configure [secure.storage.init.index-table=ture].");
+      return;
+    }
     List<String> createdTables = checkAndCreateIdxTable();
-    if(!initIndexTables && CollectionUtils.isEmpty(createdTables)){
+    if(!initIndexTableValues && CollectionUtils.isEmpty(createdTables)){
+      log.info("Ignore initiating index table value. Turn on checking switcher, configure [secure.storage.init.index-table-values=ture].");
       return;
     }
     initiateIndexTableValue(createdTables);
