@@ -4,6 +4,7 @@ import io.bridge.secure.storage.indextable.initiate.Initiator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
 
@@ -12,6 +13,7 @@ public class ApplicationStartedListener implements ApplicationListener<Applicati
   @Autowired
   @Qualifier(value="indexTableValueInitiator")
   private Initiator initiator;
+
   @Override
   public void onApplicationEvent(ApplicationStartedEvent event) {
     log.info("start checking index tables creation...");
@@ -19,6 +21,4 @@ public class ApplicationStartedListener implements ApplicationListener<Applicati
     initiator.process();
     log.info("finish checking index tables creation, cost: {}",(System.currentTimeMillis()-start));
   }
-
-
 }
